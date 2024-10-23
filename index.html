@@ -1,0 +1,32 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Application</title>
+</head>
+<body>
+    <h1>Main Application</h1>
+
+    <h2>SQL Injection</h2>
+    <form id="sqlForm" action="/users" method="get">
+        <label for="id">User ID:</label>
+        <input type="text" id="id" name="id" required>
+        <button type="submit">Get User</button>
+    </form>
+
+    <h2>XSS Attack</h2>
+    <form id="xssForm" action="/submit" method="post">
+        <label for="comment">Comment:</label>
+        <input type="text" id="comment" name="comment" required>
+        <button type="submit">Submit Comment</button>
+    </form>
+
+    <h2>CSRF Attack</h2>
+    <form id="csrfForm" action="/csrf" method="post">
+        <input type="hidden" name="action" value="delete">
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

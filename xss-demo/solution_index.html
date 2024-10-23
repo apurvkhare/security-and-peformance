@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<!-- Previous head content remains the same... -->
+<head>
+    <!-- Add Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self'; style-src 'self' 'unsafe-inline';">
+    
+    <!-- Previous content remains the same... -->
+</head>
+<body>
+    <!-- Previous content remains the same... -->
+
+    <!-- Secure version of theme customization section -->
+    <div class="section">
+        <h2>Theme Customization</h2>
+        
+        <div class="input-group">
+            <label for="themeSelect">Theme:</label>
+            <select id="themeSelect">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label for="fontSizeInput">Font Size:</label>
+            <input type="text" id="fontSizeInput" placeholder="e.g., 16px">
+        </div>
+        
+        <div class="input-group">
+            <label for="customCSSInput">Custom CSS:</label>
+            <input type="text" id="customCSSInput" placeholder="e.g., font-family: Arial">
+        </div>
+
+        <button onclick="applyThemeSecurely()">Preview Theme</button>
+        
+        <div id="themePreview">
+            <h3>Theme Preview</h3>
+            <p>This is how your theme will look.</p>
+        </div>
+    </div>
+
+    <script>
+        // Previous secure JavaScript code remains the same...
+
+        // Secure function to validate and sanitize CSS
+        function sanitizeCSS(css) {
+            // Only allow specific CSS properties
+            const allowedProperties = [
+                'color',
+                'background-color',
+                'font-size',
+                'font-family',
+                'padding',
+                'margin'
+            ];
+            
+            // Simple CSS parser
+            const properties = css.split(';')
+                .map(prop => prop.trim())
+                .filter(prop => prop.length > 0)
+                .map(prop => {
+                    const [key, value] = prop.split(':').map(p => p.trim());
+                    return { key, value };
+                })
+                .filter(({ key }) => allowedProperties.includes(key));
+            
+            return properties.map(({ key, value }) => `${key}: ${value}`).join(';');
+        }
+
+        // Secure function to escape HTML
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Secure function to load theme from URL
+        function loadThemeFromURLSecurely() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const theme = urlParams.get('theme');
+            const fontSize = urlParams.get('fontSize');
+            
+            if (theme || fontSize) {
+                applyThemeSecurely(theme, fontSize);
+            }
+        }
+
+        // Secure function to apply theme
+        function applyThemeSecurely() {
+            const theme = document.getElementById('themeSelect').value;
+            const fontSize = document.getElementById('fontSizeInput').value;
+            const customCSS = document.getElementById('customCSSInput').value;
+
+            // Validate theme
+            const allowedThemes = ['light', 'dark'];
+            const safeTheme = allowedThemes.includes(theme) ? theme : 'light';
+
+            // Validate font size
+            const safeFontSize = /^\d+px$/.test(fontSize) ? fontSize : '16px';
+
+            // Sanitize custom CSS
+            const safeCSS = sanitizeCSS(customCSS);
+
+            // Safely update the preview
+            const previewDiv = document.getElementById('themePreview');
+            
+            // Clear existing content
+            previewDiv.innerHTML = '';
+            
+            // Safely add new content
+            const heading = document.createElement('h3');
+            heading.textContent = 'Theme Preview';
+            
+            const themePara = document.createElement('p');
+            themePara.textContent = `Current Theme: ${safeTheme}`;
+            
+            const fontPara = document.createElement('p');
+            fontPara.textContent = `Font Size: ${safeFontSize}`;
+            
+            previewDiv.appendChild(heading);
+            previewDiv.appendChild(themePara);
+            previewDiv.appendChild(fontPara);
+
+            // Safely apply styles
+            previewDiv.className = `theme-${safeTheme}`;
+            previewDiv.style = safeCSS;
+            if (safeFontSize) {
+                previewDiv.style.fontSize = safeFontSize;
+            }
+        }
+
+        // Load theme securely from URL parameters when page loads
+        loadThemeFromURLSecurely();
+    </script>
+</body>
+</html>

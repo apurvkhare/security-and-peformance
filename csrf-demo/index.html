@@ -1,0 +1,131 @@
+<!-- legitimate-bank.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Secure Bank</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .container { border: 1px solid #ccc; padding: 20px; margin: 20px 0; }
+        .balance { font-size: 24px; margin: 20px 0; }
+        button { padding: 10px 20px; margin: 5px; }
+        input { padding: 5px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Your Bank Account</h1>
+    
+    <!-- Login Section -->
+    <div class="container" id="loginSection">
+        <h2>Login</h2>
+        <button onclick="login()">Login as Demo User</button>
+    </div>
+
+    <!-- Account Section (hidden until logged in) -->
+    <div class="container" id="accountSection" style="display: none;">
+        <div class="balance">Balance: $<span id="balanceAmount">0</span></div>
+
+        <!-- Vulnerable Transfer Form -->
+        <div class="container">
+            <h3>Vulnerable Transfer (No CSRF Protection)</h3>
+            <form id="vulnerableForm">
+                Amount: <input type="number" name="amount" required><br>
+                To Account: <input type="text" name="toAccount" required><br>
+                <button type="submit">Transfer (Vulnerable)</button>
+            </form>
+        </div>
+
+        <!-- Secure Transfer Form -->
+        <div class="container">
+            <h3>Secure Transfer (With CSRF Protection)</h3>
+            <form id="secureForm">
+                <input type="hidden" name="_csrf" id="csrfToken">
+                Amount: <input type="number" name="amount" required><br>
+                To Account: <input type="text" name="toAccount" required><br>
+                <button type="submit">Transfer (Secure)</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let csrfToken = '';
+
+        async function login() {
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                
+                if (data.csrfToken) {
+                    csrfToken = data.csrfToken;
+                    document.getElementById('csrfToken').value = csrfToken;
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('accountSection').style.display = 'block';
+                    updateBalance();
+                }
+            } catch (error) {
+                console.error('Login failed:', error);
+            }
+        }
+
+        async function updateBalance() {
+            try {
+                const response = await fetch('/api/balance');
+                const data = await response.json();
+                document.getElementById('balanceAmount').textContent = data.balance;
+            } catch (error) {
+                console.error('Failed to fetch balance:', error);
+            }
+        }
+
+        // Vulnerable transfer
+        document.getElementById('vulnerableForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/api/vulnerable/transfer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: formData.get('amount'),
+                        toAccount: formData.get('toAccount')
+                    })
+                });
+                const data = await response.json();
+                alert(data.message || data.error);
+                updateBalance();
+            } catch (error) {
+                console.error('Transfer failed:', error);
+            }
+        });
+
+        // Secure transfer
+        document.getElementById('secureForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/api/secure/transfer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({
+                        amount: formData.get('amount'),
+                        toAccount: formData.get('toAccount'),
+                        _csrf: csrfToken
+                    })
+                });
+                const data = await response.json();
+                alert(data.message || data.error);
+                updateBalance();
+            } catch (error) {
+                console.error('Transfer failed:', error);
+            }
+        });
+    </script>
+</body>
+</html>

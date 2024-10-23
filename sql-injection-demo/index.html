@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blog System - SQL Injection Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .warning {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .attack-example {
+            color: #d32f2f;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="warning">
+        ⚠️ This is a demonstration of SQL Injection vulnerabilities. DO NOT use this code in production!
+    </div>
+
+    <!-- Login Form - Always True Attack -->
+    <div class="section">
+        <h2>Login</h2>
+        <p>Try this attack: <span class="attack-example">admin' OR '1'='1</span></p>
+        
+        <div class="input-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" placeholder="Username">
+        </div>
+        <div class="input-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" placeholder="Password">
+        </div>
+        <button onclick="login()">Login</button>
+        <pre id="loginResult"></pre>
+    </div>
+
+    <!-- Search Form - Query Stacking -->
+    <div class="section">
+        <h2>Search Posts</h2>
+        <p>Try this attack: <span class="attack-example">test'; DROP TABLE blog_posts; --</span></p>
+        
+        <div class="input-group">
+            <label for="searchKeyword">Search Keyword:</label>
+            <input type="text" id="searchKeyword" placeholder="Enter keyword...">
+        </div>
+        <button onclick="searchPosts()">Search</button>
+        <pre id="searchResults"></pre>
+    </div>
+
+    <!-- Profile View - Data Exfiltration -->
+    <div class="section">
+        <h2>View Profile</h2>
+        <p>Try this attack: <span class="attack-example">admin' UNION SELECT credit_card, api_key FROM users WHERE '1'='1</span></p>
+        
+        <div class="input-group">
+            <label for="profileUsername">Username:</label>
+            <input type="text" id="profileUsername" placeholder="Enter username...">
+        </div>
+        <button onclick="viewProfile()">View Profile</button>
+        <pre id="profileResult"></pre>
+    </div>
+
+    <script>
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            
+            const result = await response.json();
+            document.getElementById('loginResult').textContent = 
+                JSON.stringify(result, null, 2);
+        }
+
+        async function searchPosts() {
+            const keyword = document.getElementById('searchKeyword').value;
+            const response = await fetch(`/api/posts/search?keyword=${encodeURIComponent(keyword)}`);
+            const result = await response.json();
+            document.getElementById('searchResults').textContent = 
+                JSON.stringify(result, null, 2);
+        }
+
+        async function viewProfile() {
+            const username = document.getElementById('profileUsername').value;
+            const response = await fetch(`/api/users/profile?username=${encodeURIComponent(username)}`);
+            const result = await response.json();
+            document.getElementById('profileResult').textContent = 
+                JSON.stringify(result, null, 2);
+        }
+    </script>
+</body>
+</html>
